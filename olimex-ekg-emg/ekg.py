@@ -19,11 +19,6 @@ struct Olimexino328_packet
   uint8_t    switches; // State of PD5 to PD2, in bits 3 to 0.
 };
 """
-import io
-from queue import Queue, Empty
-import time
-from threading import Thread
-
 import serial 
 
 NUMCHANNELS = 6
@@ -35,76 +30,89 @@ SYNC1 = 0x5a
 DEFAULT_BAUDRATE = 57600
 
 
-def parse_packet(packet):
-    packet = [packet.read(1) for _ in range(PACKET_SIZE)]
-    sync0 = packet[0]
-    sync1 = packet[1]
+class PacketStreamReader(object):
+    def __init__(self, port, **kwargs):
+        self.serial = None
+        self.open_serial_connection(port)
+        if not self.serial:
+            raise portNotOpenError
 
-    version = packet[2]
-    count = packet[3]
-    data = packet[4:16]
-    switches = packet[16]
-    return version 
+    def open_serial_connection(self, port):
+        self.serial = serial.Serial(port)
 
+    def _get_next_packet(self):
+        if self.serial.inWaiting() < PACKET_SIZE:
+            return -1, None
 
-class UnexpectedEndOfStream(Exception): pass
-
-
-class NonBlockingStreamReader:
-
-    def __init__(self, stream):
-        """ 
-        :param stream: the stream to read from. ie. serial port
-        """
-        self._stream = stream
-        self._queue = Queue()
-
-        self._thread = Thread(
-            target = self._populate_queue,
-            args = (self._stream, self._queue)
-        )
-        self._thread.daemon = True
-        self._thread.start()  # start collecting lines from the stream
-    
-    def _populate_queue(self, stream, queue):
-        """
-        Collect one byte from ``stream`` and put it in ``queue``.
-        """
-        while True:
-            byte = stream.read()
-            if byte:
-                queue.put(byte)
+        byte0 = None
+        byte1 = None
+        
+        while byte0 != SYNC0 or byte1 != SYNC1: 
+            if self.serial.inWaiting() < PACKET_SIZE: 
+                return -1, None
             else:
-                raise UnexpectedEndOfStream
+                byte0 = byte1
+                byte1 = self.serial.read()
+        
+        # read 15 bytes and parse result
+        buff = bytearray()
+        buff.extend(byte0)
+        buff.extend(byte1)
+        for _ in range(PACKET_SIZE - 2):
+            buff.extend(self.serial.read())
+        return buff
 
-    def read_byte(self, timeout=None):
-        try:
-            return self._queue.get(block=timeout is not None, timeout = timeout)
-        except Empty:
-            return None
+    def _parse_packet(self, packet):
+        sync0 = packet[0]
+        sync1 = packet[1]
+        version = packet[2]
+        count = packet[3]
+        data = packet[4:16]
+        switches = packet[16]
 
+        return data
+
+    def _calculate_value_from_packet_data(self, data):
+        return data
+
+    def get_next_packet_value(self):
+        packet = self._get_next_packet()
+        data = self._parse_packet(packet)
+        return self._calculate_value_from_packet_data(data)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return None
+
+    def __del__(self):
+        if self.serial:
+            self.serial.close()
+        
 
 if __name__ == '__main__': 
-    S = serial.Serial('/dev/tty.usbmodem1411', DEFAULT_BAUDRATE)
-    print (S.name)
+    import unittest
 
-    nbsr = NonBlockingStreamReader(S)
-   
-    time.sleep(1)
-    
-    byte0, byte1 = None, None
-    
-    while True:
-        byte0 = byte1
-        byte1 = nbsr.read_byte()
-        if byte0 == SYNC0 and byte1 == SYNC1:
-            for _ in range(PACKET_SIZE - 2):
-                nbsr.read_byte()
-        break
-    
-    while True:      
-        buffer_ = io.BytesIO()
-        for _ in range(PACKET_SIZE):
-            buffer_.write(nbsr.read_byte())
-        print (parse_packet(buffer_))
+    class PacketStreamReaderTestCase(unittest.TestCase):
+        def test___init__(self):
+            # trying to open a non-existant port raises exception
+            with self.assertRaises(serial.serialutil.SerialException):
+                PacketStreamReader('/fake/port/noop/')
 
+        def test__get_next_packet(self):
+            raise NotImplementedError
+
+        def test__parse_packet(self):
+            raise NotImplementedError
+
+        def test__calculate_value_from_packet_data(self):
+            raise NotImplementedError
+
+        def test_get_next_packet_value(self):
+            raise NotImplementedError
+
+        def test___next__(self):
+            raise NotImplementedError
+
+    unittest.main()
