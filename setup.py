@@ -6,19 +6,19 @@ with open("README.rst") as fd:
 
 setup(
     name='olimex-ekg-emg',
-    version='0.0.1',
+    version='0.1.0',
     description='A package for gathering data from the Olimex EKG/EMG Shield.',
     license='BSD',
     long_description=readme_text,
     author='Paul Logston',
     author_email='code@logston.me',
-    url = 'https://github.com/logston/olimex-ekg-emg',
+    url='https://github.com/logston/olimex-ekg-emg',
     test_suite='tests',
-    keywords = ['Olimex', 'EKG', 'EMG', 'Arduino'],
+    keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
     install_requires=[
         'pyserial>=2.7',
     ],
-    classifiers = [
+    classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Education',
         'Intended Audience :: Healthcare Industry',

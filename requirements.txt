@@ -1,0 +1,4 @@
+numpy==1.9.1
+pyqtgraph==0.9.8
+pyserial==2.7
+scipy==0.14.0
