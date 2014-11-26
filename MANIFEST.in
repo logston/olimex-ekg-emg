@@ -3,6 +3,8 @@ include AUTHORS
 include CHANGES
 include LICENSE
 include MANIFEST.in
+include slsnif.py
+include ShieldEkgEmgDemo.ino
 recursive-include docs *
 recursive-include tests *
 recursive-exclude * __pycache__
