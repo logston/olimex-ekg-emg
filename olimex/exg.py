@@ -1,4 +1,11 @@
 """
+This module defines a PacketStreamReader for reading packets
+from an Olimex-EKG-EMG shield.
+
+
+Details describing how an Olimex-EKG-EMG
+shield packet is organized are below.
+
 ///////////////////////////////////////////////
 ////////// Packet Format Version 2 ////////////
 ///////////////////////////////////////////////
@@ -27,6 +34,15 @@ from olimex.utils import calculate_values_from_packet_data
 
 
 class PacketStreamReader(object):
+    """
+    Instantiations of this class are iterators and can be passed to the
+    next() function to retrieve the next available Olimex-EKG-EMG packet.
+
+    For example:
+        reader = PacketStreamReader('/path/to/port')
+        packet = next(reader)
+    """
+
     def __init__(self, port):
         self._serial = None
         self._open_serial_connection(port)
@@ -48,7 +64,6 @@ class PacketStreamReader(object):
             # We need at least (PACKET_SIZE - 2) + 1 bytes before
             # attempting to get the next packet.
             if self._serial.inWaiting() < PACKET_SIZE - 1:
-                time.sleep(0.5)
                 return None
 
             byte0, byte1 = byte1, self._serial.read()
@@ -66,6 +81,10 @@ class PacketStreamReader(object):
             return None
         data = packet[PACKET_SLICES['data']]
         return calculate_values_from_packet_data(data)
+
+    @property
+    def packets_in_waiting(self):
+        return self._serial.inWaiting() // PACKET_SIZE
 
     def __iter__(self):
         return self

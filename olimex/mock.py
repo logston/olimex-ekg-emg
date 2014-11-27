@@ -1,3 +1,7 @@
+"""
+This module defines several functions and classes for mocking a
+serial port which is receiving Olimex-EKG-EMG packets.
+"""
 import random
 import sys
 
@@ -12,6 +16,11 @@ def packet_data_generator():
 
 
 def packet_generator():
+    """
+    Return an EXG formatted packet that contains fake channel data.
+
+    This generator produces fake packets of the form sent by the Olimex-EKG-EMG shield.
+    """
     count = 0
     data_value_gen = packet_data_generator()
     while True:
@@ -23,10 +32,20 @@ def packet_generator():
 
 
 def fake_serial_class_factory(mock_data_source):
+    """
+    Return a serial.Serial like object.
+
+    A factory for creating serial.Serial like objects. This objects
+    can be used for testing other logic within in this package.
+    :param mock_data_source:
+    """
     if isinstance(mock_data_source, str):
         file_path = mock_data_source
 
         class FakeSerialFromFile(object):
+            """
+            A class for mocking a serial.Serial object with data from a file.
+            """
             def __init__(self, *args, **kwargs):
                 self.fd = open(file_path, 'rb')
                 self._buffer = bytearray()
@@ -60,6 +79,10 @@ def fake_serial_class_factory(mock_data_source):
         return FakeSerialFromFile
     elif isinstance(mock_data_source, bytearray):
         class FakeSerialByteArray(object):
+            """
+            A class for mocking a serial.Serial object with data from a bytearray.
+            """
+
             def __init__(self, *args, **kwargs):
                 self._buffer = mock_data_source
                 self._in_waiting = len(mock_data_source)
@@ -81,6 +104,9 @@ def fake_serial_class_factory(mock_data_source):
 
 
 class SerialMocked(object):
+    """
+    A context manager for mocking serial.Serial objects during testing.
+    """
     def __init__(self, mock_data_source):
         self.fake_serial_class = fake_serial_class_factory(mock_data_source)
 

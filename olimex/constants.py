@@ -1,3 +1,6 @@
+"""
+This module defines constants used throughout this package.
+"""
 
 NUMCHANNELS = 6
 HEADERLEN = 4

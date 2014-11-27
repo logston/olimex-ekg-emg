@@ -23,5 +23,6 @@ def print_packets():
             print("{0: <60} {1: <20}".format(str(data), str(values)))
             next_packet = reader._get_next_packet()
 
+
 if __name__ == '__main__':
     print_packets()

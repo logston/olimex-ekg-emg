@@ -2,7 +2,7 @@
 
 def calculate_values_from_packet_data(data):
     """
-    Return a list of the 6 values parsed from the packet data.
+    Return a list of the 6 channel values parsed from the packet data.
 
     Data sent from the Olimex shield is in the following form:
         uint16_t   data[6];
