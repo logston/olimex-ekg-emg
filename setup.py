@@ -5,16 +5,21 @@ import olimex
 with open("README.rst") as fd:
     README = fd.read()
 
+with open("LICENSE") as fd:
+    LICENSE = fd.read()
+
 
 setup(
     name='olimex-ekg-emg',
     version=olimex.__version__,
     description='A package for gathering data from the Olimex EKG/EMG Shield.',
-    license='BSD',
+    license=LICENSE,
     long_description=README,
-    author='Paul Logston',
-    author_email='code@logston.me',
+    author=olimex.__author__,
+    author_email=olimex.__email__,
     url='https://github.com/logston/olimex-ekg-emg',
+    packages=['olimex'],
+    include_package_data=True,
     test_suite='tests',
     keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
     install_requires=[
