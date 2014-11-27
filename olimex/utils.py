@@ -22,3 +22,7 @@ def calculate_values_from_packet_data(data):
         values.append((byte_a << 8) | byte_b)
 
     return values
+
+
+def calculate_heart_rate(data):
+    return 60

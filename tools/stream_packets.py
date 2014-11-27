@@ -27,6 +27,5 @@ def stream_packets():
         time.sleep(1/256)
 
 
-
 if __name__ == '__main__':
     stream_packets()
