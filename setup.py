@@ -1,15 +1,17 @@
 from setuptools import setup
 
+import olimex
 
 with open("README.rst") as fd:
-    readme_text = fd.read()
+    README = fd.read()
+
 
 setup(
     name='olimex-ekg-emg',
-    version='0.1.0',
+    version=olimex.__version__,
     description='A package for gathering data from the Olimex EKG/EMG Shield.',
     license='BSD',
-    long_description=readme_text,
+    long_description=README,
     author='Paul Logston',
     author_email='code@logston.me',
     url='https://github.com/logston/olimex-ekg-emg',
@@ -17,6 +19,9 @@ setup(
     keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
     install_requires=[
         'pyserial>=2.7',
+        'numpy>=1.9.1',
+        'scipy>=0.14.0',
+        'matplotlib>=1.4.2',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

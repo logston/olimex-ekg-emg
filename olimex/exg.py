@@ -4,27 +4,27 @@ from an Olimex-EKG-EMG shield.
 
 
 Details describing how an Olimex-EKG-EMG
-shield packet is organized are below.
+shield packet is organized are below::
 
-///////////////////////////////////////////////
-////////// Packet Format Version 2 ////////////
-///////////////////////////////////////////////
-17-byte packets are transmitted from Olimexino328 at 256Hz,
-using 1 start bit, 8 data bits, 1 stop bit, no parity, 
-57600 bits per second.
+    ///////////////////////////////////////////////
+    ////////// Packet Format Version 2 ////////////
+    ///////////////////////////////////////////////
+    17-byte packets are transmitted from Olimexino328 at 256Hz,
+    using 1 start bit, 8 data bits, 1 stop bit, no parity,
+    57600 bits per second.
 
-Minimial transmission speed is 
-256Hz * sizeof(Olimexino328_packet) * 10 = 43520 bps.
+    Minimial transmission speed is
+    256Hz * sizeof(Olimexino328_packet) * 10 = 43520 bps.
 
-struct Olimexino328_packet
-{
-  uint8_t    sync0;    // = 0xa5
-  uint8_t    sync1;    // = 0x5a
-  uint8_t    version;  // = 2 (packet version)
-  uint8_t    count;    // packet counter. Increases by 1 each packet.
-  uint16_t   data[6];  // 10-bit sample (= 0 - 1023) in big endian (Motorola) format.
-  uint8_t    switches; // State of PD5 to PD2, in bits 3 to 0.
-};
+    struct Olimexino328_packet
+    {
+      uint8_t    sync0;    // = 0xa5
+      uint8_t    sync1;    // = 0x5a
+      uint8_t    version;  // = 2 (packet version)
+      uint8_t    count;    // packet counter. Increases by 1 each packet.
+      uint16_t   data[6];  // 10-bit sample (= 0 - 1023) in big endian (Motorola) format.
+      uint8_t    switches; // State of PD5 to PD2, in bits 3 to 0.
+    };
 """
 import serial
 import time
@@ -36,9 +36,10 @@ from olimex.utils import calculate_values_from_packet_data
 class PacketStreamReader(object):
     """
     Instantiations of this class are iterators and can be passed to the
-    next() function to retrieve the next available Olimex-EKG-EMG packet.
+    :py:func:`next` function to retrieve the next available Olimex-EKG-EMG packet.
 
-    For example:
+    For example::
+
         reader = PacketStreamReader('/path/to/port')
         packet = next(reader)
     """

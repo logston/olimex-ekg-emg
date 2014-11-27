@@ -1,6 +1,6 @@
 """
 This module defines several functions and classes for mocking a
-serial port which is receiving Olimex-EKG-EMG packets.
+serial port receiving Olimex-EKG-EMG (aka. EXG) packets.
 """
 import random
 import sys
@@ -33,10 +33,11 @@ def packet_generator():
 
 def fake_serial_class_factory(mock_data_source):
     """
-    Return a serial.Serial like object.
+    Return a :py:class:`serial.Serial` like object.
 
-    A factory for creating serial.Serial like objects. This objects
+    A factory for creating :py:class:`serial.Serial` like objects. These objects
     can be used for testing other logic within in this package.
+
     :param mock_data_source:
     """
     if isinstance(mock_data_source, str):
@@ -105,14 +106,14 @@ def fake_serial_class_factory(mock_data_source):
 
 class SerialMocked(object):
     """
-    A context manager for mocking serial.Serial objects during testing.
+    A context manager for mocking :py:class:`serial.Serial` objects during testing.
     """
     def __init__(self, mock_data_source):
         self.fake_serial_class = fake_serial_class_factory(mock_data_source)
 
     def __enter__(self):
         """
-        Replace real serial.Serial class with ``FakeSerial``.
+        Replace real :py:class:`serial.Serial` class with ``FakeSerial``.
         """
         self.real_serial_class = sys.modules['serial'].Serial
         sys.modules['serial'].Serial = self.fake_serial_class

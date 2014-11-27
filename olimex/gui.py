@@ -1,10 +1,5 @@
 """
-This module defines logic for plotting, in real-time, exg data.
-
-update_generator: A generator function that will update the exg figure.
-
-show_exg: A function that will create a new matplotlib figure and make
-          a call to animation.FuncAnimation to begin plotting the exg.
+This module defines logic for plotting exg data in real-time.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,22 +9,25 @@ from olimex.exg import PacketStreamReader
 from olimex.utils import calculate_heart_rate
 
 
-def update_generator(ax, port):
+def update_generator(axes, port):
     """
     Update exg figure.
-    :param ax:
+
+    This function will update the exg figure.
+
+    :param axes:
     :param port:
     """
     samples_per_graph = 2560
     period_multiplier = 2
 
-    ax.set_ylim(0, 1024)
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
+    axes.set_ylim(0, 1024)
+    axes.xaxis.set_visible(False)
+    axes.yaxis.set_visible(False)
 
     # initialize plot with zeros
     data = np.zeros(samples_per_graph)
-    line, = ax.plot(data)
+    line, = axes.plot(data)
 
     # instantiate a packet reader
     reader = PacketStreamReader(port)
@@ -61,15 +59,20 @@ def update_generator(ax, port):
         amin = np.amin(data)
         total_amplitude = amax - amin
         margin = total_amplitude * 0.1
-        ax.set_ylim(amin - margin, amax + margin)
+        axes.set_ylim(amin - margin, amax + margin)
         yield
 
 
 def show_exg(port):
     """
-    Create and display a real-time exg figure.
-    :param port:
-    :return:
+    Create and display a real-time :ref:`exg <exg>` figure.
+
+    This function will create a new matplotlib figure and make
+    a call to :py:class:`~matplotlib.animation.FuncAnimation` to
+    begin plotting the :ref:`exg <exg>`.
+
+    :param port: Serial port being sent exg packets.
+    :type port: str
     """
     fig, ax = plt.subplots()
     update_gen = update_generator(ax, port)
