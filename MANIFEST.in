@@ -1,9 +1,9 @@
 include README.rst
 include AUTHORS
-include CHANGES
+include HISTORY.rst
 include LICENSE
 include MANIFEST.in
-include ShieldEkgEmgDemo.ino
+recursive-include sketches *
 recursive-include docs *
 recursive-include tests *
 recursive-include mock-data *

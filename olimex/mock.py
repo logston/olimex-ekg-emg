@@ -3,7 +3,6 @@ This module defines several functions and classes for mocking a
 serial port receiving Olimex-EKG-EMG (aka. EXG) packets.
 """
 import random
-import sys
 
 from olimex.constants import PACKET_SIZE, SYNC0, SYNC1
 
@@ -31,6 +30,64 @@ def packet_generator():
         count += 1
 
 
+class FakeSerialFromFile(object):
+    """
+    A class for mocking a :py:class:`serial.Serial` object with data from a file.
+    """
+    def __init__(self, file_path, *args, **kwargs):
+        self.fd = open(file_path, 'rb')
+        self._buffer = bytearray()
+        self._in_waiting = 0
+
+        self._read_fake_data()
+
+    def _read_fake_data(self):
+        for _ in range(PACKET_SIZE * 10):
+            byte = self.fd.read(1)
+            if not byte:
+                break
+            self._buffer.extend(byte)
+            self._in_waiting += 1
+
+    def inWaiting(self):
+        return self._in_waiting
+
+    def read(self):
+        """
+        Return one byte.
+        """
+        self._in_waiting -= 1
+        if self._in_waiting < PACKET_SIZE:
+            self._read_fake_data()
+        return self._buffer.pop(0)
+
+    def close(self):
+        self.fd.close()
+
+
+class FakeSerialByteArray(object):
+    """
+    A class for mocking a serial.Serial object with data from a bytearray.
+    """
+
+    def __init__(self, data, *args, **kwargs):
+        self._buffer = data
+        self._in_waiting = len(data)
+
+    def inWaiting(self):
+        return self._in_waiting
+
+    def read(self):
+        """
+        Return one byte.
+        """
+        self._in_waiting -= 1
+        return self._buffer.pop(0)
+
+    def close(self):
+        pass
+
+
 def fake_serial_class_factory(mock_data_source):
     """
     Return a :py:class:`serial.Serial` like object.
@@ -41,67 +98,9 @@ def fake_serial_class_factory(mock_data_source):
     :param mock_data_source:
     """
     if isinstance(mock_data_source, str):
-        file_path = mock_data_source
-
-        class FakeSerialFromFile(object):
-            """
-            A class for mocking a serial.Serial object with data from a file.
-            """
-            def __init__(self, *args, **kwargs):
-                self.fd = open(file_path, 'rb')
-                self._buffer = bytearray()
-                self._in_waiting = 0
-
-                self._read_fake_data()
-
-            def _read_fake_data(self):
-                for _ in range(PACKET_SIZE * 10):
-                    byte = self.fd.read(1)
-                    if not byte:
-                        break
-                    self._buffer.extend(byte)
-                    self._in_waiting += 1
-
-            def inWaiting(self):
-                return self._in_waiting
-
-            def read(self):
-                """
-                Return one byte.
-                """
-                self._in_waiting -= 1
-                if self._in_waiting < PACKET_SIZE:
-                    self._read_fake_data()
-                return self._buffer.pop(0)
-
-            def close(self):
-                self.fd.close()
-
-        return FakeSerialFromFile
+        return FakeSerialFromFile(mock_data_source)
     elif isinstance(mock_data_source, bytearray):
-        class FakeSerialByteArray(object):
-            """
-            A class for mocking a serial.Serial object with data from a bytearray.
-            """
-
-            def __init__(self, *args, **kwargs):
-                self._buffer = mock_data_source
-                self._in_waiting = len(mock_data_source)
-
-            def inWaiting(self):
-                return self._in_waiting
-
-            def read(self):
-                """
-                Return one byte.
-                """
-                self._in_waiting -= 1
-                return self._buffer.pop(0)
-
-            def close(self):
-                pass
-
-        return FakeSerialByteArray
+        return FakeSerialByteArray(mock_data_source)
 
 
 class SerialMocked(object):
@@ -109,14 +108,13 @@ class SerialMocked(object):
     A context manager for mocking :py:class:`serial.Serial` objects during testing.
     """
     def __init__(self, mock_data_source):
-        self.fake_serial_class = fake_serial_class_factory(mock_data_source)
+        self.mock_data_source = mock_data_source
 
     def __enter__(self):
         """
         Replace real :py:class:`serial.Serial` class with ``FakeSerial``.
         """
-        self.real_serial_class = sys.modules['serial'].Serial
-        sys.modules['serial'].Serial = self.fake_serial_class
+        return fake_serial_class_factory(self.mock_data_source)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.modules['serial'].Serial = self.real_serial_class
+        pass

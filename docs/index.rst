@@ -24,6 +24,7 @@ Table of Contents:
    mock
    utils
    definitions
+   history
 
 * :ref:`genindex`
 * :ref:`modindex`

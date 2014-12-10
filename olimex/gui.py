@@ -1,22 +1,26 @@
 """
 This module defines logic for plotting exg data in real-time.
 """
+from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import serial
+from olimex.constants import DEFAULT_BAUDRATE
 
 from olimex.exg import PacketStreamReader
+from olimex.mock import SerialMocked
 from olimex.utils import calculate_heart_rate
 
 
-def update_generator(axes, port):
+def update_generator(axes, reader, from_file=False):
     """
     Update exg figure.
 
     This function will update the exg figure.
 
     :param axes:
-    :param port:
+    :param reader:
     """
     samples_per_graph = 2560
     period_multiplier = 2
@@ -29,19 +33,25 @@ def update_generator(axes, port):
     data = np.zeros(samples_per_graph)
     line, = axes.plot(data)
 
-    # instantiate a packet reader
-    reader = PacketStreamReader(port)
-
     while True:
         new_samples = []
-        packets_in_waiting = reader.packets_in_waiting
-        while len(new_samples) / period_multiplier < packets_in_waiting:
+        if from_file:
+            packets_in_waiting = 1
             values = next(reader)
             if values:
-                lead_value = values[1]
+                (channel_1, _, _, _, _, _) = values
                 # Transform graph, stretch the x axis
                 for _ in range(period_multiplier):
-                    new_samples.append(lead_value)
+                    new_samples.append(channel_1)
+        else:
+            packets_in_waiting = reader.packets_in_waiting
+            while len(new_samples) / period_multiplier < packets_in_waiting:
+                values = next(reader)
+                if values:
+                    (channel_1, _, _, _, _, _) = values
+                    # Transform graph, stretch the x axis
+                    for _ in range(period_multiplier):
+                        new_samples.append(channel_1)
 
         data = np.concatenate((data[packets_in_waiting * period_multiplier:],
                                np.array(new_samples)))
@@ -63,7 +73,7 @@ def update_generator(axes, port):
         yield
 
 
-def show_exg(port):
+def show_exg_for_port(port):
     """
     Create and display a real-time :ref:`exg <exg>` figure.
 
@@ -74,15 +84,51 @@ def show_exg(port):
     :param port: Serial port being sent exg packets.
     :type port: str
     """
-    fig, ax = plt.subplots()
-    update_gen = update_generator(ax, port)
+    fig, axes = plt.subplots()
+    # instantiate a packet reader
+    serial_obj = serial.Serial(port, DEFAULT_BAUDRATE)
+    reader = PacketStreamReader(serial_obj)
+    update_gen = update_generator(axes, reader)
     animation.FuncAnimation(fig, lambda _: next(update_gen), interval=50)
     plt.show()
 
 
+def show_exg_for_file(file):
+    """
+    Create and display an :ref:`exg <exg>` figure.
+
+    This function will create a new matplotlib figure and make
+    a call to :py:class:`~matplotlib.animation.FuncAnimation` to
+    begin plotting the :ref:`exg <exg>`.
+
+    :param file: File to stream EXG data from.
+    :type file: str
+    """
+    fig, axes = plt.subplots()
+    # instantiate a packet reader
+    with SerialMocked(file) as serial_obj:
+        reader = PacketStreamReader(serial_obj)
+        update_gen = update_generator(axes, reader, from_file=True)
+        animation.FuncAnimation(fig, lambda _: next(update_gen), interval=8)
+        plt.show()
+
+
 if __name__ == '__main__':
-    default_port = '/dev/tty.usbmodem1411'
-    port = input('Path of com port (default: {}): '.format(default_port))
-    if not port:
-        port = default_port
-    show_exg(port)
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Run GUI for Olimex-EKG-EMG.')
+    parser.add_argument('-p', '--port',
+                        dest='port',
+                        help='Port to which an Arduino is connected (eg. /dev/tty.usbmodem1411)')
+    parser.add_argument('-f', '--file',
+                        dest='file',
+                        help='File to stream EXG data from.')
+    args = parser.parse_args()
+
+    if args.port:
+        show_exg_for_port(args.port)
+    elif args.file:
+        show_exg_for_file(args.file)
+    else:
+        parser.print_help()
+

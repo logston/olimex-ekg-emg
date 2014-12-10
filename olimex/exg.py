@@ -9,27 +9,27 @@ shield packet is organized are below::
     ///////////////////////////////////////////////
     ////////// Packet Format Version 2 ////////////
     ///////////////////////////////////////////////
-    17-byte packets are transmitted from Olimexino328 at 256Hz,
-    using 1 start bit, 8 data bits, 1 stop bit, no parity,
-    57600 bits per second.
+    // 17-byte packets are transmitted from Olimexino328 at 256Hz,
+    // using 1 start bit, 8 data bits, 1 stop bit, no parity.
 
-    Minimial transmission speed is
-    256Hz * sizeof(Olimexino328_packet) * 10 = 43520 bps.
+    // Minimial Transmission Speed
+    // A sample is taken every 8ms (ie. 125 samples per second)
+    // 125 samples/s * sizeof(Olimexino328_packet) = 2,125 bytes per second
+    // 2125 bytes per second = 17,000 bits per second.
+    // 2.125 kBps (I think we can manage that :)
+    // 7,650 kB per hour ~ 7.5M MB per hour
 
     struct Olimexino328_packet
     {
-      uint8_t    sync0;    // = 0xa5
-      uint8_t    sync1;    // = 0x5a
-      uint8_t    version;  // = 2 (packet version)
-      uint8_t    count;    // packet counter. Increases by 1 each packet.
-      uint16_t   data[6];  // 10-bit sample (= 0 - 1023) in big endian (Motorola) format.
-      uint8_t    switches; // State of PD5 to PD2, in bits 3 to 0.
+      uint8_t	sync0;		// = 0xa5
+      uint8_t	sync1;		// = 0x5a
+      uint8_t	version;	// = 2 (packet version)
+      uint8_t	count;		// packet counter. Increases by 1 each packet.
+      uint16_t	data[6];	// 10-bit sample (= 0 - 1023) in big endian (Motorola) format.
+      uint8_t	switches;	// State of PD5 to PD2, in bits 3 to 0.
     };
 """
-import serial
-import time
-
-from olimex.constants import SYNC0, SYNC1, PACKET_SIZE, PACKET_SLICES, DEFAULT_BAUDRATE
+from olimex.constants import SYNC0, SYNC1, PACKET_SIZE, PACKET_SLICES
 from olimex.utils import calculate_values_from_packet_data
 
 
@@ -40,23 +40,17 @@ class PacketStreamReader(object):
 
     For example::
 
-        reader = PacketStreamReader('/path/to/port')
+        serial = serial.Serial(port, 115200)
+        reader = PacketStreamReader(serial)
         packet = next(reader)
     """
-
-    def __init__(self, port):
-        self._serial = None
-        self._open_serial_connection(port)
-
-    def _open_serial_connection(self, port):
-        self._serial = serial.Serial(port, DEFAULT_BAUDRATE)
-        if not self._serial:
-            raise serial.SerialException('Unable to open port {}'.format(port))
+    def __init__(self, serial):
+        self._serial = serial
 
     def _get_next_packet(self):
-        byte0, byte1 = None, None
+        byte0, byte1 = 0, 0
 
-        while byte0 != SYNC0 or byte1 != SYNC1:  # Looking for  b'\xa5', b'Z'
+        while byte0 != SYNC0 or byte1 != SYNC1:
             # If we don't have enough data to do ALL of the following,
             # return None.
             #   - Move current byte 1 into byte0 position
@@ -64,19 +58,27 @@ class PacketStreamReader(object):
             #   - Read the rest of a packet into a buffer (PACKET_SIZE - 2 bytes)
             # We need at least (PACKET_SIZE - 2) + 1 bytes before
             # attempting to get the next packet.
-            if self._serial.inWaiting() < PACKET_SIZE - 1:
+            in_waiting = self._serial.inWaiting()
+            if in_waiting < PACKET_SIZE - 1:
                 return None
 
-            byte0, byte1 = byte1, self._serial.read()
+            byte = self._serial.read()
+            if isinstance(byte, (str, bytes)):
+                byte = ord(byte)
+            byte0, byte1 = byte1, byte
         
         # read 15 bytes and parse result
         buff = bytearray()
-        buff.extend((ord(byte0), ord(byte1)))
+        buff.extend((byte0, byte1))
         for _ in range(PACKET_SIZE - 2):
-            buff.extend((ord(self._serial.read()),))
+            byte = self._serial.read()
+            if isinstance(byte, (str, bytes)):
+                byte = ord(byte)
+            buff.extend((byte,))
+
         return buff
 
-    def _get_next_packet_value(self):
+    def _get_next_packet_values(self):
         packet = self._get_next_packet()
         if packet is None:
             return None
@@ -91,7 +93,8 @@ class PacketStreamReader(object):
         return self
 
     def __next__(self):
-        return self._get_next_packet_value()
+        next_packet = self._get_next_packet_values()
+        return next_packet
 
     def __del__(self):
         if self._serial:

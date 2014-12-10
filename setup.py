@@ -29,7 +29,7 @@ setup(
         'matplotlib>=1.4.2',
     ],
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Education',
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Science/Research',

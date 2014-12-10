@@ -1,6 +1,5 @@
 import random
 import unittest
-import serial
 from olimex.constants import PACKET_SLICES
 from olimex.exg import PacketStreamReader
 from olimex.mock import SerialMocked, packet_generator
@@ -8,11 +7,6 @@ from olimex.utils import calculate_values_from_packet_data
 
 
 class PacketStreamReaderTestCase(unittest.TestCase):
-    def test__open_serial_connection(self):
-        # trying to open a non-existent port raises exception
-        with self.assertRaises(serial.SerialException):
-            PacketStreamReader('/fake/port/noop/')
-
     def test__get_next_packet(self):
         byte_array = bytearray()
         # add some noise
@@ -25,13 +19,13 @@ class PacketStreamReaderTestCase(unittest.TestCase):
         packet3 = next(packet_gen)
         byte_array.extend(packet3)
 
-        with SerialMocked(byte_array):
-            reader = PacketStreamReader('/fake/port')
+        with SerialMocked(byte_array) as serial_obj:
+            reader = PacketStreamReader(serial_obj)
             self.assertEqual(packet1, reader._get_next_packet())
             self.assertEqual(packet2, reader._get_next_packet())
             self.assertEqual(packet3, reader._get_next_packet())
 
-    def test_get_next_packet_value(self):
+    def test_get_next_packet_values(self):
         byte_array = bytearray()
         # add some noise
         byte_array.extend((random.randint(0, 255) for _ in range(5)))
@@ -47,9 +41,9 @@ class PacketStreamReaderTestCase(unittest.TestCase):
         packet2_data = packet2[PACKET_SLICES['data']]
         packet2_value = calculate_values_from_packet_data(packet2_data)
 
-        with SerialMocked(byte_array):
-            reader = PacketStreamReader('/fake/port')
-            self.assertEqual(packet1_value, reader._get_next_packet_value())
+        with SerialMocked(byte_array) as serial_obj:
+            reader = PacketStreamReader(serial_obj)
+            self.assertEqual(packet1_value, reader._get_next_packet_values())
             self.assertEqual(packet2_value, next(reader))
 
 

@@ -13,15 +13,15 @@ olimex_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def print_packets():
-    with SerialMocked(os.path.join(olimex_root, 'mock-data', 'bytes.bin')):
-        reader = PacketStreamReader('/fake/port')
+    with SerialMocked(os.path.join(olimex_root, 'mock-data', 'DATALOG.TXT')) as serial_obj:
+        reader = PacketStreamReader(serial_obj)
 
-        next_packet = reader._get_next_packet()
-        while next_packet:
-            data = next_packet[PACKET_SLICES['data']]
+        packet = next(reader)
+        while packet:
+            data = packet[PACKET_SLICES['data']]
             values = calculate_values_from_packet_data(data)
             print("{0: <60} {1: <20}".format(str(data), str(values)))
-            next_packet = reader._get_next_packet()
+            packet = next(reader)
 
 
 if __name__ == '__main__':
