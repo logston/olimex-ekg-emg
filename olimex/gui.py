@@ -1,7 +1,6 @@
 """
 This module defines logic for plotting exg data in real-time.
 """
-from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -9,11 +8,11 @@ import serial
 from olimex.constants import DEFAULT_BAUDRATE
 
 from olimex.exg import PacketStreamReader
-from olimex.mock import SerialMocked
+from olimex.mock import FakeSerialFromFile, FakeSerialByteArray, FakeSerialTimedByteArray
 from olimex.utils import calculate_heart_rate
 
 
-def update_generator(axes, reader, from_file=False):
+def axes_refresher_generator(axes, reader):
     """
     Update exg figure.
 
@@ -33,28 +32,26 @@ def update_generator(axes, reader, from_file=False):
     data = np.zeros(samples_per_graph)
     line, = axes.plot(data)
 
+    # A counter to keep track of how many times the
+    # axes on the figure has been refreshed.
+    refresh_counter = 0
+
     while True:
-        new_samples = []
-        if from_file:
-            packets_in_waiting = 1
-            values = next(reader)
-            if values:
-                (channel_1, _, _, _, _, _) = values
+        new_packets = []
+        # Calculate the number of new packets that need to be
+        # read during this refresh.
+        packet_grab_count = 6 if refresh_counter % 4 else 7
+        refresh_counter += 1
+        for _ in range(packet_grab_count):
+            channel_values = next(reader)
+            if channel_values:
+                channel_1, *_ = channel_values
                 # Transform graph, stretch the x axis
                 for _ in range(period_multiplier):
-                    new_samples.append(channel_1)
-        else:
-            packets_in_waiting = reader.packets_in_waiting
-            while len(new_samples) / period_multiplier < packets_in_waiting:
-                values = next(reader)
-                if values:
-                    (channel_1, _, _, _, _, _) = values
-                    # Transform graph, stretch the x axis
-                    for _ in range(period_multiplier):
-                        new_samples.append(channel_1)
+                    new_packets.append(channel_1)
 
-        data = np.concatenate((data[packets_in_waiting * period_multiplier:],
-                               np.array(new_samples)))
+        data = np.concatenate((data[len(new_packets):], np.array(new_packets)))
+
         # Add new data to plot
         line.set_ydata(data)
 
@@ -73,7 +70,7 @@ def update_generator(axes, reader, from_file=False):
         yield
 
 
-def show_exg_for_port(port):
+def show_exg(source, source_type='port'):
     """
     Create and display a real-time :ref:`exg <exg>` figure.
 
@@ -81,39 +78,30 @@ def show_exg_for_port(port):
     a call to :py:class:`~matplotlib.animation.FuncAnimation` to
     begin plotting the :ref:`exg <exg>`.
 
-    :param port: Serial port being sent exg packets.
-    :type port: str
+    :param source: Serial port being sent exg packets or
+                   file path to file containing saved exg data.
+    :type source: str
     """
-    fig, axes = plt.subplots()
     # instantiate a packet reader
-    serial_obj = serial.Serial(port, DEFAULT_BAUDRATE)
+    if source_type == 'file':
+        serial_obj = FakeSerialFromFile(source)
+        serial_obj.start()
+    elif source_type == 'bytearray':
+        with open(source, 'rb') as fd:
+            buff = bytearray(fd.read())
+        serial_obj = FakeSerialByteArray(buff)
+    else:
+        serial_obj = serial.Serial(source, DEFAULT_BAUDRATE)
+
     reader = PacketStreamReader(serial_obj)
-    update_gen = update_generator(axes, reader)
-    animation.FuncAnimation(fig, lambda _: next(update_gen), interval=50)
+
+    fig, axes = plt.subplots()
+    axes_refresher = axes_refresher_generator(axes, reader)
+    animation.FuncAnimation(fig, lambda _: next(axes_refresher), interval=50)
     plt.show()
 
 
-def show_exg_for_file(file):
-    """
-    Create and display an :ref:`exg <exg>` figure.
-
-    This function will create a new matplotlib figure and make
-    a call to :py:class:`~matplotlib.animation.FuncAnimation` to
-    begin plotting the :ref:`exg <exg>`.
-
-    :param file: File to stream EXG data from.
-    :type file: str
-    """
-    fig, axes = plt.subplots()
-    # instantiate a packet reader
-    with SerialMocked(file) as serial_obj:
-        reader = PacketStreamReader(serial_obj)
-        update_gen = update_generator(axes, reader, from_file=True)
-        animation.FuncAnimation(fig, lambda _: next(update_gen), interval=8)
-        plt.show()
-
-
-if __name__ == '__main__':
+def run_gui():
     import argparse
 
     parser = argparse.ArgumentParser(description='Run GUI for Olimex-EKG-EMG.')
@@ -123,12 +111,20 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file',
                         dest='file',
                         help='File to stream EXG data from.')
+    parser.add_argument('-b', '--bytearray',
+                        dest='bytearray',
+                        help='File to stream EXG data from. Load entire file prior to display.')
     args = parser.parse_args()
 
     if args.port:
-        show_exg_for_port(args.port)
+        show_exg(args.port)
     elif args.file:
-        show_exg_for_file(args.file)
+        show_exg(args.file, source_type='file')
+    elif args.bytearray:
+        show_exg(args.bytearray, source_type='bytearray')
     else:
         parser.print_help()
 
+
+if __name__ == '__main__':
+    run_gui()

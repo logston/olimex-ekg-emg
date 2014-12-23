@@ -46,6 +46,7 @@ class PacketStreamReader(object):
     """
     def __init__(self, serial):
         self._serial = serial
+        self._packet_index = 0
 
     def _get_next_packet(self):
         byte0, byte1 = 0, 0
@@ -93,8 +94,7 @@ class PacketStreamReader(object):
         return self
 
     def __next__(self):
-        next_packet = self._get_next_packet_values()
-        return next_packet
+        return self._get_next_packet_values()
 
     def __del__(self):
         if self._serial:

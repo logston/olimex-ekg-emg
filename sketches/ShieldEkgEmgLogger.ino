@@ -74,17 +74,17 @@ struct Olimexino328_packet
 #define PACKETLEN (NUMCHANNELS * 2 + HEADERLEN + 1)
 
 // -------- Transmission 
-#define TIMER2VAL (1000/(SAMPFREQ))       // Set 125Hz sampling frequency                    
+#define TIMER2VAL (1000/(SAMPFREQ))       // Set 125Hz sampling frequency
 #define SAMPFREQ 125                      // ADC sampling rate
-#define TXSPEED 115200                     // 57600 or 115200.
+#define TXSPEED 115200                    // 57600 or 115200.
 
 // --------- Global Variables
 volatile unsigned char TXBuf[PACKETLEN];  // The transmission packet
 volatile unsigned char TXIndex;           // Next byte to write in the transmission packet.
 volatile unsigned char CurrentCh;         // Current channel being sampled.
-volatile unsigned char counter = 0;	  // Additional divider used to generate CAL_SIG
+volatile unsigned char counter = 0;	      // Additional divider used to generate CAL_SIG
 volatile unsigned int ADC_Value = 0;	  // ADC current value
-File dataFile;  // File handle
+File dataFile;                            // File handle
 
 boolean log_to_file = false;  // set to true to send data to SD card rather than serial port
 
@@ -302,7 +302,7 @@ void setup() {
   }
 
   // write a series of bytes that will act signal, to software 
-  // consumming these bytes, that the arduino has been restarted.
+  // consuming these bytes, that the arduino has been restarted.
   write_reset_signal();
   Serial.println("Reset signal logged.");
 

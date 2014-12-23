@@ -5,7 +5,7 @@ This module defines constants used throughout this package.
 NUMCHANNELS = 6
 HEADERLEN = 4
 PACKET_SIZE = (NUMCHANNELS * 2 + HEADERLEN + 1)
-SAMPLE_FREQUENCY = 256  # ADC sampling rate 256
+SAMPLE_FREQUENCY = 125  # ADC sampling rate 125
 SYNC0 = 0xa5  # b'\xa5', 165
 SYNC1 = 0x5a  # b'Z', 90
 
