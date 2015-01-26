@@ -8,7 +8,7 @@ import serial
 from olimex.constants import DEFAULT_BAUDRATE
 
 from olimex.exg import PacketStreamReader
-from olimex.mock import FakeSerialFromFile, FakeSerialByteArray, FakeSerialTimedByteArray
+from olimex.mock import FakeSerialByteArray
 from olimex.utils import calculate_heart_rate
 
 
@@ -57,16 +57,18 @@ def axes_refresher_generator(axes, reader):
 
         # TODO
         # Calculate heart rate
-        # heart_rate = calculate_heart_rate(data)
+        heart_rate = calculate_heart_rate(data)
+        print(heart_rate)
         # ax.text(0.98, 0.95, '{} HR'.format(heart_rate),
         #         fontsize=15, transform=ax.transAxes, horizontalalignment='right')
 
         # Calibrate y axis limits
         amax = np.amax(data)
         amin = np.amin(data)
-        total_amplitude = amax - amin
-        margin = total_amplitude * 0.1
-        axes.set_ylim(amin - margin, amax + margin)
+        if amin != amax:
+            total_amplitude = amax - amin
+            margin = total_amplitude * 0.1
+            axes.set_ylim(amin - margin, amax + margin)
         yield
 
 
@@ -84,9 +86,6 @@ def show_exg(source, source_type='port'):
     """
     # instantiate a packet reader
     if source_type == 'file':
-        serial_obj = FakeSerialFromFile(source)
-        serial_obj.start()
-    elif source_type == 'bytearray':
         with open(source, 'rb') as fd:
             buff = bytearray(fd.read())
         serial_obj = FakeSerialByteArray(buff)
@@ -110,18 +109,13 @@ def run_gui():
                         help='Port to which an Arduino is connected (eg. /dev/tty.usbmodem1411)')
     parser.add_argument('-f', '--file',
                         dest='file',
-                        help='File to stream EXG data from.')
-    parser.add_argument('-b', '--bytearray',
-                        dest='bytearray',
-                        help='File to stream EXG data from. Load entire file prior to display.')
+                        help='File to stream EXG data from. Loads entire file prior to display.')
     args = parser.parse_args()
 
     if args.port:
         show_exg(args.port)
     elif args.file:
         show_exg(args.file, source_type='file')
-    elif args.bytearray:
-        show_exg(args.bytearray, source_type='bytearray')
     else:
         parser.print_help()
 

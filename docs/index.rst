@@ -25,6 +25,7 @@ Table of Contents:
    utils
    definitions
    history
+   license
 
 * :ref:`genindex`
 * :ref:`modindex`

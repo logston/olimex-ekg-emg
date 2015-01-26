@@ -1,3 +1,4 @@
+import numpy as np
 
 
 def calculate_values_from_packet_data(data):
@@ -29,4 +30,4 @@ def calculate_values_from_packet_data(data):
 
 
 def calculate_heart_rate(data):
-    return 60
+    return np.fft.rfft(data)

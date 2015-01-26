@@ -5,6 +5,24 @@ olimex-ekg-emg
 
 A Python package for gathering and viewing data from the `Olimex EKG/EMG Shield`_.
 
+
+NOTICE
+------
+
+THIS SOFTWARE DOES NOT PROVIDE MEDICAL ADVICE
+
+The information provided by this software is not medical advice. By using this software,
+You acknowledge that this software does not and should not be construed to provide
+health-related or medical advice, or clinical decision support, or to provide,
+support or replace any diagnosis, recommendation, advice, treatment or decision by an
+appropriately trained and licensed physician, or to create a patient-physician relationship.
+You hereby agree that this software will not be relied on or used, in whole or in part,
+for any of the preceding purposes by or on Your behalf with respect to any individual(s).
+If You believe You suffer from any medical condition, whether or not this software's
+results support this belief, You should immediately seek professional medical advice
+or consult with a qualified medical professional.
+
+
 Installation
 ------------
 

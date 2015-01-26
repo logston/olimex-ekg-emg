@@ -32,6 +32,30 @@ def packet_generator():
         count += 1
 
 
+class FakeSerialByteArray(object):
+    """
+    A class for mocking a serial.Serial object with data from a bytearray.
+    """
+
+    def __init__(self, byte_array, *args, **kwargs):
+        self._buffer = byte_array
+
+    def __repr__(self):
+        return '<FakeSerialByteArray {}>'.format(id(self))
+
+    def inWaiting(self):
+        return len(self._buffer)
+
+    def read(self):
+        """
+        Return one byte.
+        """
+        return self._buffer.pop(0)
+
+    def close(self):
+        pass
+
+
 class FakeSerialFromFile(object):
     """
     A class for mocking a :py:class:`serial.Serial` object with data from a file.
@@ -95,30 +119,6 @@ class FakeSerialFromFile(object):
             else:
                 return
         raise SystemExit('Thread failed to die. Killing main process.')
-
-
-class FakeSerialByteArray(object):
-    """
-    A class for mocking a serial.Serial object with data from a bytearray.
-    """
-
-    def __init__(self, byte_array, *args, **kwargs):
-        self._buffer = byte_array
-
-    def __repr__(self):
-        return '<FakeSerialByteArray {}>'.format(id(self))
-
-    def inWaiting(self):
-        return len(self._buffer)
-
-    def read(self):
-        """
-        Return one byte.
-        """
-        return self._buffer.pop(0)
-
-    def close(self):
-        pass
 
 
 class FakeSerialTimedByteArray(object):
