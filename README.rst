@@ -1,7 +1,7 @@
 olimex-ekg-emg
 ==============
 
-|docs|
+|docs| |downloads| |latest| |versions| |implementations| |dev_status| |license|
 
 A Python package for gathering and viewing data from the `Olimex EKG/EMG Shield`_.
 
@@ -56,6 +56,30 @@ Further documentation can be found on `Read the Docs`_.
     :alt: Documentation Status
     :scale: 100%
     :target: http://olimex-ekg-emg.readthedocs.org/en/latest/
+
+.. |downloads| image:: https://pypip.in/download/olimex-ekg-emg/badge.svg?period=month
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg
+    :alt: Downloads
+
+.. |latest| image:: https://pypip.in/version/olimex-ekg-emg/badge.svg?text=version
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg/
+    :alt: Latest Version
+
+.. |versions| image:: https://pypip.in/py_versions/olimex-ekg-emg/badge.svg
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg/
+    :alt: Supported Python versions
+
+.. |implementations| image:: https://pypip.in/implementation/olimex-ekg-emg/badge.svg
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg/
+    :alt: Supported Python implementations
+
+.. |dev_status| image:: https://pypip.in/status/olimex-ekg-emg/badge.svg
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg/
+    :alt: Development Status
+
+.. |license| image:: https://pypip.in/license/olimex-ekg-emg/badge.svg
+    :target: https://pypi.python.org/pypi/olimex-ekg-emg/
+    :alt: License
 
 .. _matplotlib figure: http://matplotlib.org/api/figure_api.html#figure
 
