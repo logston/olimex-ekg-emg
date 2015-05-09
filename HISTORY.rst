@@ -21,3 +21,8 @@ Release History
 * Update Arduino sketch so that the Arduino can send
   EXG data to either an SD card or to a serial port.
 
+0.1.0 (2014-11-27)
+++++++++++++++++++
+
+* Getting started
+
