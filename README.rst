@@ -36,8 +36,7 @@ Usage
 
 ::
 
-    >>> from olimex.gui import show_exg
-    >>> show_exg('/path/to/port')
+    $ exg -p /path/to/port
 
 Replace ``'/path/to/port'`` with the path to the port to which your Arduino is connected.
 

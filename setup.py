@@ -22,6 +22,9 @@ setup(
     include_package_data=True,
     test_suite='tests',
     keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
+    entry_points = {
+        'console_scripts': ['exg=olimex.gui:run_gui'],
+    },
     install_requires=[
         'pyserial>=2.7',
         'numpy>=1.9.1',
