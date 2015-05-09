@@ -3,7 +3,7 @@
 Release History
 ---------------
 
-0.1.3 (2015-05-09)
+0.1.4 (2015-05-09)
 ++++++++++++++++++
 
 * Added ``exg`` script for starting gui from command line.
