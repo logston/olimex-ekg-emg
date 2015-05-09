@@ -28,7 +28,6 @@ setup(
     install_requires=[
         'pyserial>=2.7',
         'numpy>=1.9.1',
-        'scipy>=0.14.0',
         'matplotlib>=1.4.2',
     ],
     classifiers=[
