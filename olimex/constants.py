@@ -6,11 +6,10 @@ NUMCHANNELS = 6
 HEADERLEN = 4
 PACKET_SIZE = (NUMCHANNELS * 2 + HEADERLEN + 1)
 SAMPLE_FREQUENCY = 125  # ADC sampling rate 125
-SYNC0 = 0xa5  # b'\xa5', 165
-SYNC1 = 0x5a  # b'Z', 90
+SYNC0 = b'\xa5' # 0xa5, b'\xa5', 165
+SYNC1 = b'Z'    # 0x5a, b'Z', 90
 
 DEFAULT_BAUDRATE = 115200
-
 
 PACKET_SLICES = {
     'sync0': slice(0, 1),
@@ -20,3 +19,4 @@ PACKET_SLICES = {
     'data': slice(4, 16),
     'switches': slice(16)
 }
+

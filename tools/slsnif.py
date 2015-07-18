@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 
 import serial
 
@@ -9,7 +10,7 @@ from olimex.constants import DEFAULT_BAUDRATE
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def read_raw_data(port, logfile=None):
+def slsnif(port, logfile=None):
     ser = serial.Serial(port, baudrate=DEFAULT_BAUDRATE)
     array = bytearray()
     while True:
@@ -28,11 +29,7 @@ def read_raw_data(port, logfile=None):
             break
 
 
-def slsnif():
-    """
-    [-l <logfile>] ([--log <logfile>])
-    File to direct output to. Output is sent to stdout by default.
-    """
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Serial line sniffer')
 
     parser.add_argument('port',
@@ -43,7 +40,10 @@ def slsnif():
                              'Path should be relative to slsnif.py')
     args = parser.parse_args()
 
-    read_raw_data(args.port, args.logfile)
+    print('Stop program with CTRL + C')
+    if args.logfile:
+        print('Streaming data will be written to disk when program is stopped.')
 
-if __name__ == '__main__':
-    slsnif()
+    time.sleep(2)
+    slsnif(args.port, args.logfile)
+

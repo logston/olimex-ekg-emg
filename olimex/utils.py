@@ -31,3 +31,4 @@ def calculate_values_from_packet_data(data):
 
 def calculate_heart_rate(data):
     return np.fft.rfft(data)
+

@@ -29,11 +29,13 @@ shield packet is organized are below::
       uint8_t	switches;	// State of PD5 to PD2, in bits 3 to 0.
     };
 """
-from olimex.constants import SYNC0, SYNC1, PACKET_SIZE, PACKET_SLICES
+import time
+
+from olimex.constants import PACKET_SIZE, PACKET_SLICES, SAMPLE_FREQUENCY, SYNC0, SYNC1
 from olimex.utils import calculate_values_from_packet_data
 
 
-class PacketStreamReader(object):
+class PacketStreamReader:
     """
     Instantiations of this class are iterators and can be passed to the
     :py:func:`next` function to retrieve the next available Olimex-EKG-EMG packet.
@@ -46,7 +48,10 @@ class PacketStreamReader(object):
     """
     def __init__(self, serial):
         self._serial = serial
+        # data members for tracking performance
         self._packet_index = 0
+        self.start_time = time.perf_counter()
+        self.times = []
 
     def _get_next_packet(self):
         byte0, byte1 = 0, 0
@@ -62,27 +67,20 @@ class PacketStreamReader(object):
             in_waiting = self._serial.inWaiting()
             if in_waiting < PACKET_SIZE - 1:
                 return None
+            byte0, byte1 = byte1, self._serial.read()
 
-            byte = self._serial.read()
-            if isinstance(byte, (str, bytes)):
-                byte = ord(byte)
-            byte0, byte1 = byte1, byte
-        
-        # read 15 bytes and parse result
         buff = bytearray()
-        buff.extend((byte0, byte1))
-        for _ in range(PACKET_SIZE - 2):
-            byte = self._serial.read()
-            if isinstance(byte, (str, bytes)):
-                byte = ord(byte)
-            buff.extend((byte,))
-
+        buff.append(ord(byte0))
+        buff.append(ord(byte1))
+        # read 15 more bytes and parse result
+        buff.extend(self._serial.read(PACKET_SIZE -2))
         return buff
 
     def _get_next_packet_values(self):
         packet = self._get_next_packet()
         if packet is None:
             return None
+        self._packet_index += 1
         data = packet[PACKET_SLICES['data']]
         return calculate_values_from_packet_data(data)
 
@@ -94,8 +92,11 @@ class PacketStreamReader(object):
         return self
 
     def __next__(self):
+        if not self._packet_index % SAMPLE_FREQUENCY:
+            self.times.append(time.perf_counter() - self.start_time)
         return self._get_next_packet_values()
 
     def __del__(self):
         if self._serial:
             self._serial.close()
+
