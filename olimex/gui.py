@@ -148,12 +148,17 @@ def run_gui():
     parser.add_argument('-f', '--file',
                         dest='file',
                         help='File to stream EXG data from. Loads entire file prior to display.')
+    parser.add_argument('--print-timing-data',
+                        action='store_true',
+                        default=False,
+                        dest='print_timing_data',
+                        help='File to stream EXG data from. Loads entire file prior to display.')
     args = parser.parse_args()
 
     if args.port:
-        show_exg(args.port, print_timing_data=True)
+        show_exg(args.port, print_timing_data=args.print_timing_data)
     elif args.file:
-        show_exg(args.file, source_type='file', print_timing_data=True)
+        show_exg(args.file, source_type='file', print_timing_data=print_timing_data)
     else:
         parser.print_help()
 
