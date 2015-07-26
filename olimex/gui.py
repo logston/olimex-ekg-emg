@@ -76,10 +76,17 @@ def axes_updater(axes, packet_reader):
     :param axes:
     :param packet_reader:
     """
-    minor_grid_points = np.arange(0, DOTS_PER_STRIP_LENGTH, DOTS_PER_004_SECOND)
-    axes.vlines(minor_grid_points, 0, DOTS_PER_STRIP_HEIGHT, color='r', alpha=0.3)
-    major_grid_points = np.arange(0,DOTS_PER_STRIP_LENGTH, DOTS_PER_02_SECOND)
-    axes.vlines(major_grid_points, 0, DOTS_PER_STRIP_HEIGHT, color='r', alpha=0.9)
+    minor_vgrid_points = np.arange(0, DOTS_PER_STRIP_LENGTH, DOTS_PER_004_SECOND)
+    axes.vlines(minor_vgrid_points, 0, DOTS_PER_STRIP_HEIGHT, color='r', alpha=0.3)
+
+    minor_hgrid_points = np.arange(0, DOTS_PER_STRIP_HEIGHT, 1.75 * DOTS_PER_004_SECOND)
+    axes.hlines(minor_hgrid_points, 0, DOTS_PER_STRIP_LENGTH, color='r', alpha=0.3)
+
+    major_vgrid_points = np.arange(0, DOTS_PER_STRIP_LENGTH, DOTS_PER_02_SECOND)
+    axes.vlines(major_vgrid_points, 0, DOTS_PER_STRIP_HEIGHT, color='r', alpha=0.9)
+
+    major_hgrid_points = np.arange(0, DOTS_PER_STRIP_HEIGHT, 1.75 * DOTS_PER_02_SECOND)
+    axes.hlines(major_hgrid_points, 0, DOTS_PER_STRIP_LENGTH, color='r', alpha=0.9)
 
     # Start the graph off with a flat vertically-centered line
     ydata = np.array([INITIAL_VOLTAGE for _ in range(DOTS_PER_STRIP_LENGTH)])
