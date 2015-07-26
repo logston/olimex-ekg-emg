@@ -3,6 +3,14 @@
 Release History
 ---------------
 
+0.1.5 (2015-07-25)
+++++++++++++++++++
+
+* Speedups
+* Add performance measuring logic for debugging slow traces
+* Added ECG grid to main axes
+* Update docs theme
+
 0.1.4 (2015-05-09)
 ++++++++++++++++++
 
