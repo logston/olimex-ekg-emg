@@ -29,6 +29,7 @@ setup(
         'pyserial>=2.7',
         'numpy>=1.9.1',
         'matplotlib>=1.4.2',
+        'scipy>=0.15.1',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
