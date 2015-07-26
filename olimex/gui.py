@@ -165,7 +165,7 @@ def run_gui():
     if args.port:
         show_exg(args.port, print_timing_data=args.print_timing_data)
     elif args.file:
-        show_exg(args.file, source_type='file', print_timing_data=print_timing_data)
+        show_exg(args.file, source_type='file', print_timing_data=args.print_timing_data)
     else:
         parser.print_help()
 
