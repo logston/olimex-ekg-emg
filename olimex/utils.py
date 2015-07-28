@@ -24,7 +24,11 @@ def calculate_values_from_packet_data(data):
         # byte_a is the most significant byte and byte_b is
         # the least significant byte.
         byte_a, byte_b = data[index], data[index + 1]
-        values.append((byte_a << 8) | byte_b)
+        val = (byte_a << 8) | byte_b
+        # For some reason the data comes in upside down.
+        # Flip data around a horizontal axis.
+        val = (val - 1024) * -1
+        values.append(val)
 
     return values
 
