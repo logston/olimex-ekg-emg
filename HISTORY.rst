@@ -3,6 +3,12 @@
 Release History
 ---------------
 
+0.1.6 (2015-08-14)
+++++++++++++++++++
+
+* Added mock data
+* Flipped EKG signal long horizontal axis for a more familiar waveform.
+
 0.1.5 (2015-07-25)
 ++++++++++++++++++
 
