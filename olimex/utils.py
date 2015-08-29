@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 
 def calculate_values_from_packet_data(data):
@@ -35,4 +36,10 @@ def calculate_values_from_packet_data(data):
 
 def calculate_heart_rate(data):
     return np.fft.rfft(data)
+
+
+def get_mock_data_list():
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    mock_data_dir = os.path.join(os.path.dirname(package_dir), 'mock-data')
+    return mock_data_dir, os.listdir(mock_data_dir)
 

@@ -1,6 +1,8 @@
 """
 This module defines logic for plotting exg data in real-time.
 """
+import os
+
 import matplotlib as mpl
 #mpl.use('webagg')
 import matplotlib.pyplot as plt
@@ -12,7 +14,7 @@ import serial
 from olimex.constants import DEFAULT_BAUDRATE, SAMPLE_FREQUENCY
 from olimex.exg import PacketStreamReader
 from olimex.mock import FakeSerialByteArray
-from olimex.utils import calculate_heart_rate
+from olimex.utils import calculate_heart_rate, get_mock_data_list
 
 # Packets are coming in at 125 packets per second
 # Ie. Every 8 ms, a packet is received
@@ -155,6 +157,11 @@ def run_gui():
     parser.add_argument('-f', '--file',
                         dest='file',
                         help='File to stream EXG data from. Loads entire file prior to display.')
+    parser.add_argument('--list-mock-data',
+                        action='store_true',
+                        default=False,
+                        dest='list_mock_data',
+                        help='List all mock data files available.')
     parser.add_argument('--print-timing-data',
                         action='store_true',
                         default=False,
@@ -165,7 +172,14 @@ def run_gui():
     if args.port:
         show_exg(args.port, print_timing_data=args.print_timing_data)
     elif args.file:
+        data_dir, files = get_mock_data_list()
+        if args.file in files:
+            args.file = os.path.join(data_dir, args.file)
         show_exg(args.file, source_type='file', print_timing_data=args.print_timing_data)
+    elif args.list_mock_data:
+        _data_dir, files = get_mock_data_list()
+        for file_ in files:
+            print(file_)
     else:
         parser.print_help()
 
