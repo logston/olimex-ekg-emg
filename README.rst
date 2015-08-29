@@ -38,10 +38,34 @@ Usage
 
     $ exg -p /path/to/port
 
-Replace ``'/path/to/port'`` with the path to the port to which your Arduino is connected.
+Replace ``/path/to/port`` with the path to the port to which your Arduino is connected.
 
 A `matplotlib figure`_ should appear and a real-time wave form should begin go to be drawn.
 Calibration of the waveform within the figure make take up to 10 seconds.
+
+Or, to play around with the included mock data ...
+
+::
+
+    $ exg -f <mock data filename>
+
+Replace ``<mock data filename>`` with one of the mock data file names. To get a
+list of the mock data file names, use the ``--list-mock-data`` command line
+option. For example:
+
+:: 
+
+    $ exg --list-mock-data
+    afib.bin
+    afltr.bin
+    asys.bin
+    j-brady.bin
+    nsr.bin
+
+Example Output
+--------------
+
+.. image:: http://logston.github.io/talks/2015-08-15-Hearduino/build/images/nsr_snippet.gif
 
 
 Further Documentation

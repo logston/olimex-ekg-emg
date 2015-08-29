@@ -3,6 +3,13 @@
 Release History
 ---------------
 
+0.1.7 (2015-08-29)
+++++++++++++++++++
+
+* Added command to list all mock data files
+* Added logic to ease use of mock data after pip install
+* Update docs
+
 0.1.6 (2015-08-14)
 ++++++++++++++++++
 

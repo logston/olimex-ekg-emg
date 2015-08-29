@@ -5,12 +5,6 @@
 
 .. include:: ../README.rst
 
-Example Output
---------------
-
-.. image:: images/ekg.png
-
-
 Contents, Indices, and Tables
 =============================
 
