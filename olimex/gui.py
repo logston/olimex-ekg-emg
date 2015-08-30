@@ -177,7 +177,8 @@ def run_gui():
             args.file = os.path.join(data_dir, args.file)
         show_exg(args.file, source_type='file', print_timing_data=args.print_timing_data)
     elif args.list_mock_data:
-        _data_dir, files = get_mock_data_list()
+        data_dir, files = get_mock_data_list()
+        print('Mock data files are stored in {}'.format(data_dir))
         for file_ in files:
             print(file_)
     else:
