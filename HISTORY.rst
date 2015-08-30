@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.1.8 (2015-08-30)
+++++++++++++++++++
+
+* Fixed issue where mock data was not installed along with package
+
 0.1.7 (2015-08-29)
 ++++++++++++++++++
 
