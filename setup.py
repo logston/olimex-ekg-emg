@@ -1,3 +1,4 @@
+import os
 from setuptools import setup
 
 import olimex
@@ -8,6 +9,8 @@ with open("README.rst") as fd:
 with open("LICENSE") as fd:
     LICENSE = fd.read()
 
+MOCK_DATA_FILES = os.listdir('mock-data')
+MOCK_DATA_FILES = map(lambda f: os.path.join('mock-data', f), MOCK_DATA_FILES)
 
 setup(
     name='olimex-ekg-emg',
@@ -19,7 +22,7 @@ setup(
     author_email=olimex.__email__,
     url='https://github.com/logston/olimex-ekg-emg',
     packages=['olimex'],
-    include_package_data=True,
+    data_files=[('olimex/mock-data', MOCK_DATA_FILES)],
     test_suite='tests',
     keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
     entry_points = {
