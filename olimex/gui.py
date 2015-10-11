@@ -175,9 +175,16 @@ def run_gui():
         data_dir, files = get_mock_data_list()
         if args.file in files:
             args.file = os.path.join(data_dir, args.file)
+        if not os.path.exists(args.file):
+            print('File at {} not found'.format(args.file))
+            return
         show_exg(args.file, source_type='file', print_timing_data=args.print_timing_data)
     elif args.list_mock_data:
         data_dir, files = get_mock_data_list()
+        if not data_dir:
+            print('No mock data found. Please try reinstalling')
+            return
+
         print('Mock data files are stored in {}'.format(data_dir))
         for file_ in files:
             print(file_)

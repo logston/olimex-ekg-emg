@@ -42,14 +42,13 @@ def calculate_heart_rate(data):
 
 
 def get_mock_data_list():
-    pkgs = pip.get_installed_distributions()
-    pkgs = [pkg for pkg in pkgs if pkg.project_name == 'olimex-ekg-emg']
-    if not pkgs:
-        return '', []
-
-    mock_data_dir = os.path.join(pkgs[0].location, 'olimex', 'mock-data')
+    mock_data_dir = os.path.join(sys.prefix, 'olimex', 'mock-data')
     if not os.path.exists(mock_data_dir):
         # possibly installed with `pip install -e .`
+        pkgs = pip.get_installed_distributions()
+        pkgs = [pkg for pkg in pkgs if pkg.project_name == 'olimex-ekg-emg']
+        if not pkgs:
+            return '', []
         mock_data_dir = os.path.join(pkgs[0].location, 'mock-data')
 
     if not os.path.exists(mock_data_dir):
