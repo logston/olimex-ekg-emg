@@ -59,9 +59,9 @@ struct Olimexino328_packet
 //~~~~~~~~~~
 
 // -------- Define Pins
-#define LED1  6
+#define LED1 6
 #define CAL_SIG 9
-#define SPEAKER 3
+#define SPEAKER 7
 // change this to match your SD shield or module;
 // Arduino Ethernet shield: pin 4
 // Adafruit SD shields and modules: pin 10
@@ -139,7 +139,7 @@ void Timer2_Overflow_ISR()
     TXBuf[((2 * CurrentCh) + HEADERLEN)] = ((unsigned char)((ADC_Value & 0xFF00) >> 8)); // Write High Byte
     TXBuf[((2 * CurrentCh) + HEADERLEN + 1)] = ((unsigned char)(ADC_Value & 0x00FF));	// Write Low Byte
   }
- 
+
   if (log_to_file) {
     dataFile = SD.open("datalog.txt", FILE_WRITE);
     // if the file is available, write to it:
@@ -151,7 +151,7 @@ void Timer2_Overflow_ISR()
       }
       dataFile.close();
       digitalWrite(LED1, LOW);
-    }  
+    }
     // if the file isn't open, pop up an error:
     else {
       Serial.println("error opening datalog.txt");
@@ -167,8 +167,8 @@ void Timer2_Overflow_ISR()
   }
 
   // Increment the packet counter
-  TXBuf[3]++;	
-  
+  TXBuf[3]++;
+
   // Generate the CAL_SIGnal
   counter++;		// increment the divider counter
   if (counter == 12) {	// 250/12/2 = 10.4Hz -> Toggle frequency
@@ -219,9 +219,9 @@ void write_reset_signal() {
   reset_TXBuf();
   // Use switches byte to signal a reset.
   TXBuf[2 * NUMCHANNELS + HEADERLEN] =  0x02;	
-  
+
   digitalWrite(LED1, HIGH);
-  
+
   if (log_to_file) {
     dataFile = SD.open("datalog.txt", FILE_WRITE);
     // if the file is available, write to it:
@@ -237,7 +237,7 @@ void write_reset_signal() {
         delay(TIMER2VAL / 2);
       }
       dataFile.close();
-    }  
+    }
     // if the file isn't open, pop up an error:
     else {
       Serial.println("error opening datalog.txt");
@@ -253,8 +253,8 @@ void write_reset_signal() {
       digitalWrite(SPEAKER, LOW);
       delay(TIMER2VAL / 2);
     }
-  }  
-  
+  }
+
   digitalWrite(LED1, LOW);
 }
 
@@ -268,30 +268,27 @@ void write_reset_signal() {
 /****************************************************/
 void setup() {
   // Setup LED1
-  pinMode(5, OUTPUT);
-  digitalWrite(5, LOW);
   pinMode(LED1, OUTPUT);  // Setup LED1 direction
   digitalWrite(LED1, LOW); // Setup LED1 state
+
   // Setup Speaker
-  pinMode(0, OUTPUT);
-  digitalWrite(0, LOW);
   pinMode(SPEAKER, OUTPUT);
-  digitalWrite(SPEAKER, LOW);  
+  digitalWrite(SPEAKER, LOW);
     // Setup calibration pin
   pinMode(CAL_SIG, OUTPUT);
-  
+
   // Start serial port
   Serial.begin(TXSPEED);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
- 
+
   if (log_to_file) {
     Serial.print("Initializing SD card...");
     // make sure that the default chip select pin is set to
     // output, even if you don't use it:
     pinMode(10, OUTPUT);
-    
+
     // See if the card is present and can be initialized:
     if (!SD.begin(CHIPSELECT)) {
       Serial.println("card failed, or not present");
@@ -307,7 +304,7 @@ void setup() {
   Serial.println("Reset signal logged.");
 
   noInterrupts();  // Disable all interrupts before initialization
- 
+
   reset_TXBuf();
   // Timer2
   // Timer2 is used to setup the analag channels sampling frequency and packet update.
@@ -315,10 +312,10 @@ void setup() {
   // In addition the CAL_SIG is generated as well, so Timer1 is not required in this case!
   FlexiTimer2::set(TIMER2VAL, Timer2_Overflow_ISR);
   FlexiTimer2::start();
- 
+
   // MCU sleep mode = idle.
   //outb(MCUCR,(inp(MCUCR) | (1<<SE)) & (~(1<<SM0) | ~(1<<SM1) | ~(1<<SM2)));
- 
+
   interrupts();  // Enable all interrupts after initialization has been completed
 }
 
@@ -333,3 +330,4 @@ void setup() {
 void loop() {
   __asm__ __volatile__ ("sleep");
 }
+
