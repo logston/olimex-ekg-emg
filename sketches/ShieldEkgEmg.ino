@@ -52,7 +52,6 @@ struct Olimexino328_packet
 #include <compat/deprecated.h>
 #include <FlexiTimer2.h>
 //http://www.arduino.cc/playground/Main/FlexiTimer2
-#include <SD.h>
 
 //~~~~~~~~~~
 // Constants
@@ -60,13 +59,7 @@ struct Olimexino328_packet
 
 // -------- Define Pins
 #define LED1 6
-#define CAL_SIG 9
 #define SPEAKER 7
-// change this to match your SD shield or module;
-// Arduino Ethernet shield: pin 4
-// Adafruit SD shields and modules: pin 10
-// Sparkfun SD shield: pin 8
-#define CHIPSELECT 4
 
 // -------- Packet Constants
 #define NUMCHANNELS 6
@@ -74,19 +67,16 @@ struct Olimexino328_packet
 #define PACKETLEN (NUMCHANNELS * 2 + HEADERLEN + 1)
 
 // -------- Transmission 
-#define TIMER2VAL (1000/(SAMPFREQ))       // Set 125Hz sampling frequency
 #define SAMPFREQ 125                      // ADC sampling rate
+#define TIMER2VAL (1000/(SAMPFREQ))       // Set 125Hz sampling frequency
 #define TXSPEED 115200                    // 57600 or 115200.
 
 // --------- Global Variables
 volatile unsigned char TXBuf[PACKETLEN];  // The transmission packet
 volatile unsigned char TXIndex;           // Next byte to write in the transmission packet.
 volatile unsigned char CurrentCh;         // Current channel being sampled.
-volatile unsigned char counter = 0;	      // Additional divider used to generate CAL_SIG
+volatile unsigned char counter = 0;	  // Additional divider used to toggle LED
 volatile unsigned int ADC_Value = 0;	  // ADC current value
-File dataFile;                            // File handle
-
-boolean log_to_file = false;  // set to true to send data to SD card rather than serial port
 
 //~~~~~~~~~~
 // Functions
@@ -109,22 +99,6 @@ void Toggle_LED1(void){
 
 
 /****************************************************/
-/*  Function name: toggle_GAL_SIG                   */
-/*  Parameters                                      */
-/*    Input   :  No	                            */
-/*    Output  :  No                                 */
-/*    Action: Switches-over GAL_SIG.                */
-/****************************************************/
-void toggle_GAL_SIG(void){
- if (digitalRead(CAL_SIG) == HIGH) { 
-   digitalWrite(CAL_SIG, LOW); 
- } else { 
-   digitalWrite(CAL_SIG, HIGH); 
- }
-}
-
-
-/****************************************************/
 /*  Function name: Timer2_Overflow_ISR              */
 /*  Parameters                                      */
 /*    Input   :  No	                            */
@@ -140,40 +114,19 @@ void Timer2_Overflow_ISR()
     TXBuf[((2 * CurrentCh) + HEADERLEN + 1)] = ((unsigned char)(ADC_Value & 0x00FF));	// Write Low Byte
   }
 
-  if (log_to_file) {
-    dataFile = SD.open("datalog.txt", FILE_WRITE);
-    // if the file is available, write to it:
-    if (dataFile) {
-      digitalWrite(LED1, HIGH);
-      // Write packet to SD card
-      for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
-        dataFile.write(TXBuf[TXIndex]);
-      }
-      dataFile.close();
-      digitalWrite(LED1, LOW);
-    }
-    // if the file isn't open, pop up an error:
-    else {
-      Serial.println("error opening datalog.txt");
-    }
-  } else {
-      digitalWrite(LED1, HIGH);
-      // Send packet over serial
-      for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
-        Serial.write(TXBuf[TXIndex]);
-      }
-      dataFile.close();
-      digitalWrite(LED1, LOW);
+  digitalWrite(LED1, HIGH);
+  // Send packet over serial
+  for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
+    Serial.write(TXBuf[TXIndex]);
   }
+  digitalWrite(LED1, LOW);
 
   // Increment the packet counter
   TXBuf[3]++;
-
-  // Generate the CAL_SIGnal
-  counter++;		// increment the divider counter
-  if (counter == 12) {	// 250/12/2 = 10.4Hz -> Toggle frequency
-    counter = 0;
-    toggle_GAL_SIG();	// Generate CAL signal with frequ ~10Hz
+  
+  counter++;
+  if (counter / 128 == 0) {
+    Toggle_LED1();
   }
 }
 
@@ -222,37 +175,15 @@ void write_reset_signal() {
 
   digitalWrite(LED1, HIGH);
 
-  if (log_to_file) {
-    dataFile = SD.open("datalog.txt", FILE_WRITE);
-    // if the file is available, write to it:
-    if (dataFile) {
-      // write 3 seconds worth of packets as a reset signal.
-      for (int i = 0; i < 3 * SAMPFREQ; i++) {
-        digitalWrite(SPEAKER, HIGH);
-        delay(TIMER2VAL / 2);
-        for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
-          dataFile.write(TXBuf[TXIndex]);
-        }
-        digitalWrite(SPEAKER, LOW);
-        delay(TIMER2VAL / 2);
-      }
-      dataFile.close();
+  // write 1 seconds worth of packets as a reset signal.
+  for (int i = 0; i < 1 * SAMPFREQ; i++) {
+    digitalWrite(SPEAKER, HIGH);
+    delay(TIMER2VAL / 2);
+    for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
+      Serial.write(TXBuf[TXIndex]);
     }
-    // if the file isn't open, pop up an error:
-    else {
-      Serial.println("error opening datalog.txt");
-    }
-  } else {
-    // write 3 seconds worth of packets as a reset signal.
-    for (int i = 0; i < 3 * SAMPFREQ; i++) {
-      digitalWrite(SPEAKER, HIGH);
-      delay(TIMER2VAL / 2);
-      for (TXIndex = 0 ; TXIndex < 17 ; TXIndex++) {
-        Serial.write(TXBuf[TXIndex]);
-      }
-      digitalWrite(SPEAKER, LOW);
-      delay(TIMER2VAL / 2);
-    }
+    digitalWrite(SPEAKER, LOW);
+    delay(TIMER2VAL / 2);
   }
 
   digitalWrite(LED1, LOW);
@@ -274,8 +205,6 @@ void setup() {
   // Setup Speaker
   pinMode(SPEAKER, OUTPUT);
   digitalWrite(SPEAKER, LOW);
-    // Setup calibration pin
-  pinMode(CAL_SIG, OUTPUT);
 
   // Start serial port
   Serial.begin(TXSPEED);
@@ -283,28 +212,12 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-  if (log_to_file) {
-    Serial.print("Initializing SD card...");
-    // make sure that the default chip select pin is set to
-    // output, even if you don't use it:
-    pinMode(10, OUTPUT);
-
-    // See if the card is present and can be initialized:
-    if (!SD.begin(CHIPSELECT)) {
-      Serial.println("card failed, or not present");
-      // don't do anything more:
-      return;
-    }
-    Serial.println("card initialized.");
-  }
-
   // write a series of bytes that will act signal, to software 
   // consuming these bytes, that the arduino has been restarted.
   write_reset_signal();
-  Serial.println("Reset signal logged.");
 
   noInterrupts();  // Disable all interrupts before initialization
-
+ 
   reset_TXBuf();
   // Timer2
   // Timer2 is used to setup the analag channels sampling frequency and packet update.
@@ -312,10 +225,10 @@ void setup() {
   // In addition the CAL_SIG is generated as well, so Timer1 is not required in this case!
   FlexiTimer2::set(TIMER2VAL, Timer2_Overflow_ISR);
   FlexiTimer2::start();
-
+ 
   // MCU sleep mode = idle.
   //outb(MCUCR,(inp(MCUCR) | (1<<SE)) & (~(1<<SM0) | ~(1<<SM1) | ~(1<<SM2)));
-
+ 
   interrupts();  // Enable all interrupts after initialization has been completed
 }
 
