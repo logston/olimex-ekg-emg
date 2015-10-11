@@ -1,5 +1,16 @@
+/***************************************************************/
+/* A Sketch for sending Olimex EKG/EMG data to olimex-ekg-emg: */
+/* https://github.com/logston/olimex-ekg-emg                   */
+/*                                                             */
+/* UPDATER: Paul Logston                                       */
+/* License: GNU General Public License (GPLv3)                 */
+/* Date: 2015-10-11                                            */
+/*                                                             */
+/* This sketch was derived from Penko Todorov Bozhkov's        */
+/* ShieldEkgEmgDemo.ino sketch. Details of that sketch follow. */
+/***************************************************************/
+
 /**********************************************************/
-/* CHANGES FROM THE SCRIPT MENTIONED BY PAUL LOGSTON      */
 /* Demo program for:                                      */
 /*    Board: SHIELD-EKG/EMG + Olimexino328                */
 /*  Manufacture: OLIMEX                                   */
@@ -13,18 +24,10 @@
 /*   Date: 19.12.2012                                     */
 /*   Built with Arduino C/C++ Compiler, version: 1.0.3    */
 /**********************************************************/
-/**********************************************************
-Purpose of this programme is to give you an easy way to
-connect Olimexino328 to ElectricGuru(TM), see:
-https://www.olimex.com/Products/EEG/OpenEEG/EEG-SMT/resources/ElecGuru40.zip
-where you'll be able to observe yours own EKG or EMG signal.
-It is based on:
-***********************************************************
-* ModularEEG firmware for one-way transmission, v0.5.4-p2
-* Copyright (c) 2002-2003, Joerg Hansmann, Jim Peters, Andreas Robinson
-* License: GNU General Public License (GPL) v2
-***********************************************************
-For proper communication packet format given below have to be supported:
+
+/***********************************************************
+For proper communication, packets sent from Arduino
+must be formatted as described below.
 ///////////////////////////////////////////////
 ////////// Packet Format Version 2 ////////////
 ///////////////////////////////////////////////
@@ -49,9 +52,10 @@ struct Olimexino328_packet
 };
 */
 /**********************************************************/
+
 #include <compat/deprecated.h>
-#include <FlexiTimer2.h>
 //http://www.arduino.cc/playground/Main/FlexiTimer2
+#include <FlexiTimer2.h>
 
 //~~~~~~~~~~
 // Constants
