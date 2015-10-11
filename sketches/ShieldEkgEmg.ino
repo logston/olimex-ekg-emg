@@ -14,7 +14,7 @@
 /*   Built with Arduino C/C++ Compiler, version: 1.0.3    */
 /**********************************************************/
 /**********************************************************
-Purpose of this programme is to give you an easy way to 
+Purpose of this programme is to give you an easy way to
 connect Olimexino328 to ElectricGuru(TM), see:
 https://www.olimex.com/Products/EEG/OpenEEG/EEG-SMT/resources/ElecGuru40.zip
 where you'll be able to observe yours own EKG or EMG signal.
@@ -66,7 +66,7 @@ struct Olimexino328_packet
 #define HEADERLEN 4
 #define PACKETLEN (NUMCHANNELS * 2 + HEADERLEN + 1)
 
-// -------- Transmission 
+// -------- Transmission
 #define SAMPFREQ 125                      // ADC sampling rate
 #define TIMER2VAL (1000/(SAMPFREQ))       // Set 125Hz sampling frequency
 #define TXSPEED 115200                    // 57600 or 115200.
@@ -90,10 +90,10 @@ volatile unsigned int ADC_Value = 0;	  // ADC current value
 /*    Action: Switches-over LED1.                   */
 /****************************************************/
 void Toggle_LED1(void){
- if (digitalRead(LED1) == HIGH) { 
-   digitalWrite(LED1, LOW); 
- } else { 
-   digitalWrite(LED1, HIGH); 
+ if (digitalRead(LED1) == HIGH) {
+   digitalWrite(LED1, LOW);
+ } else {
+   digitalWrite(LED1, HIGH);
  }
 }
 
@@ -106,7 +106,7 @@ void Toggle_LED1(void){
 /*    Action: Determines ADC sampling frequency.    */
 /****************************************************/
 void Timer2_Overflow_ISR()
-{ 
+{
   //Read the 6 ADC inputs and store current values in Packet
   for (CurrentCh = 0; CurrentCh < 6; CurrentCh++) {
     ADC_Value = analogRead(CurrentCh);
@@ -123,7 +123,7 @@ void Timer2_Overflow_ISR()
 
   // Increment the packet counter
   TXBuf[3]++;
-  
+
   counter++;
   if (counter / 128 == 0) {
     Toggle_LED1();
@@ -155,7 +155,7 @@ void reset_TXBuf() {
   TXBuf[12] = 0x02;   // CH5 High Byte
   TXBuf[13] = 0x00;   // CH5 Low Byte
   TXBuf[14] = 0x02;   // CH6 High Byte
-  TXBuf[15] = 0x00;   // CH6 Low Byte 
+  TXBuf[15] = 0x00;   // CH6 Low Byte
   TXBuf[2 * NUMCHANNELS + HEADERLEN] =  0x01;	// Switches state
 }
 
@@ -171,7 +171,7 @@ void write_reset_signal() {
 
   reset_TXBuf();
   // Use switches byte to signal a reset.
-  TXBuf[2 * NUMCHANNELS + HEADERLEN] =  0x02;	
+  TXBuf[2 * NUMCHANNELS + HEADERLEN] =  0x02;
 
   digitalWrite(LED1, HIGH);
 
@@ -212,12 +212,12 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
 
-  // write a series of bytes that will act signal, to software 
+  // write a series of bytes that will act signal, to software
   // consuming these bytes, that the arduino has been restarted.
   write_reset_signal();
 
   noInterrupts();  // Disable all interrupts before initialization
- 
+
   reset_TXBuf();
   // Timer2
   // Timer2 is used to setup the analag channels sampling frequency and packet update.
@@ -225,10 +225,10 @@ void setup() {
   // In addition the CAL_SIG is generated as well, so Timer1 is not required in this case!
   FlexiTimer2::set(TIMER2VAL, Timer2_Overflow_ISR);
   FlexiTimer2::start();
- 
+
   // MCU sleep mode = idle.
   //outb(MCUCR,(inp(MCUCR) | (1<<SE)) & (~(1<<SM0) | ~(1<<SM1) | ~(1<<SM2)));
- 
+
   interrupts();  // Enable all interrupts after initialization has been completed
 }
 
