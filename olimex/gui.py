@@ -139,7 +139,7 @@ def show_exg(source, source_type='port', print_timing_data=False):
 
     axes_updater_gen = axes_updater(axes, reader)
 
-    animation.FuncAnimation(fig, lambda _: next(axes_updater_gen),
+    ani = animation.FuncAnimation(fig, lambda _: next(axes_updater_gen),
                             interval=REFRESH_INTERVAL_MS)
     plt.show()
     if print_timing_data:
