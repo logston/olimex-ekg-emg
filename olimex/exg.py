@@ -52,6 +52,7 @@ class PacketStreamReader:
         self._packet_index = 0
         self.start_time = time.perf_counter()
         self.times = []
+        self.ret_none_count = 0
 
     def _get_next_packet(self):
         byte0, byte1 = 0, 0
@@ -94,7 +95,14 @@ class PacketStreamReader:
     def __next__(self):
         if not self._packet_index % SAMPLE_FREQUENCY:
             self.times.append(time.perf_counter() - self.start_time)
-        return self._get_next_packet_values()
+        values = self._get_next_packet_values()
+
+        if values is None:
+            self.ret_none_count += 1
+            if self.ret_none_count >= 10:
+                raise StopIteration
+ 
+        return values
 
     def __del__(self):
         if self._serial:

@@ -1,10 +1,18 @@
 """
 This module defines logic for plotting exg data in real-time.
 """
+import argparse
 import os
+import sys
+
+try:
+    import tkinter
+except ImportError:
+    print('exg requires tkinter to be installed')
+    sys.exit(1)
 
 import matplotlib as mpl
-#mpl.use('webagg')
+mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
@@ -45,7 +53,9 @@ mpl.rcParams['savefig.dpi'] = 600
 mpl.rcParams['savefig.bbox'] = 'tight'
 mpl.rcParams['lines.linewidth'] = 0.35
 
+
 INITIAL_VOLTAGE = DOTS_PER_STRIP_HEIGHT / 2
+
 
 def get_new_data_points(packet_reader):
     """
@@ -124,6 +134,7 @@ def show_exg(source, source_type='port', print_timing_data=False):
             buff = bytearray(fd.read())
         serial_obj = FakeSerialByteArray(buff)
         print('Done.')
+
     else:
         serial_obj = serial.Serial(source, DEFAULT_BAUDRATE)
 
@@ -132,6 +143,7 @@ def show_exg(source, source_type='port', print_timing_data=False):
     fig, axes = plt.subplots(figsize=(STRIP_LENGTH_SECONDS,
                                       STRIP_LENGTH_SECONDS / 3),
                              dpi=DOTS_PER_SECOND)
+    fig.canvas.set_window_title(source)
     axes.set_ylim(0, DOTS_PER_STRIP_HEIGHT)
     axes.set_xlim(0, DOTS_PER_STRIP_LENGTH)
     axes.xaxis.set_visible(False)
@@ -139,8 +151,14 @@ def show_exg(source, source_type='port', print_timing_data=False):
 
     axes_updater_gen = axes_updater(axes, reader)
 
-    animation.FuncAnimation(fig, lambda _: next(axes_updater_gen),
-                            interval=REFRESH_INTERVAL_MS)
+    # Don't remove the "ani" binding below. Otherwise this animation
+    # gets garbage collected.
+    try:
+        ani = animation.FuncAnimation(fig, lambda _: next(axes_updater_gen),
+                                  interval=REFRESH_INTERVAL_MS)
+    except StopIteration:
+        pass
+
     plt.show()
     if print_timing_data:
         for p in reader.times:
@@ -148,7 +166,6 @@ def show_exg(source, source_type='port', print_timing_data=False):
 
 
 def run_gui():
-    import argparse
 
     parser = argparse.ArgumentParser(description='Run GUI for Olimex-EKG-EMG.')
     parser.add_argument('-p', '--port',
@@ -171,6 +188,7 @@ def run_gui():
 
     if args.port:
         show_exg(args.port, print_timing_data=args.print_timing_data)
+
     elif args.file:
         data_dir, files = get_mock_data_list()
         if args.file in files:
@@ -179,6 +197,7 @@ def run_gui():
             print('File at {} not found'.format(args.file))
             return
         show_exg(args.file, source_type='file', print_timing_data=args.print_timing_data)
+
     elif args.list_mock_data:
         data_dir, files = get_mock_data_list()
         if not data_dir:
@@ -188,6 +207,7 @@ def run_gui():
         print('Mock data files are stored in {}'.format(data_dir))
         for file_ in files:
             print(file_)
+
     else:
         parser.print_help()
 
