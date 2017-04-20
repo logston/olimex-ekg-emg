@@ -99,8 +99,10 @@ class PacketStreamReader:
 
         if values is None:
             self.ret_none_count += 1
-            if self.ret_none_count >= 10:
+            if self.ret_none_count >= 1000:
                 raise StopIteration
+        else:
+            self.ret_none_count = 0
  
         return values
 

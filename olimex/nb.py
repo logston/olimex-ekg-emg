@@ -38,14 +38,15 @@ def get_new_data_points(packet_reader):
     they are displayed during the next refresh. The packet
     reader is responsible for managing that buffer.
     """
-    range_samples_per_004_second = range(SAMPLES_PER_004_SECOND)
     while True:
-        new_data = np.array([INITIAL_VOLTAGE for _ in range_samples_per_004_second])
-        for i, _ in enumerate(range_samples_per_004_second):
+        new_data = []
+        while True:
             channel_values = next(packet_reader)
             if channel_values:
                 channel_1, *_ = channel_values
-                new_data[i] = channel_1
+                new_data.append(channel_1)
+            else:
+                break
         new_data = scipy.ndimage.zoom(
             new_data,
             DOTS_PER_SECOND / SAMPLE_FREQUENCY,
@@ -55,7 +56,6 @@ def get_new_data_points(packet_reader):
 
 
 def exg(source):
-
     if source.endswith('.bin'):
         data_dir, data_list = get_mock_data_list()
         source = os.path.join(data_dir, source)
@@ -66,7 +66,7 @@ def exg(source):
         print('Done.')
 
     else:
-        serial_obj = serial.Serial(source, DEFAULT_BAUDRATE)
+        serial_obj = serial.Serial(source, baudrate=DEFAULT_BAUDRATE)
 
     reader = PacketStreamReader(serial_obj)
     new_data_gen = get_new_data_points(reader)
@@ -76,6 +76,7 @@ def exg(source):
         y_range=(0, 1024),
         plot_width=1024, 
         plot_height=400,
+        tools=[],
     )
     line = p.line(
         x=tuple(range(1024)), 
@@ -88,13 +89,13 @@ def exg(source):
         data = next(new_data_gen)
 
         new_y = tuple(ds.data['y']) + tuple(data)
-        new_y = new_y[-1024:]  
+        new_y = new_y[-1024:]
 
         new_x = tuple(range(len(new_y)))
 
         ds.data.update(x=new_x, y=new_y)
 
-    curdoc().add_periodic_callback(update, 60)
+    curdoc().add_periodic_callback(update, 30)
 
     # open a session to keep our local document in sync with server
     session = push_session(curdoc())
