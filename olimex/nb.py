@@ -100,5 +100,8 @@ def exg(source):
     # open a session to keep our local document in sync with server
     session = push_session(curdoc())
     session.show(p) # open the document in a browser
-    session.loop_until_closed() # run forever
+    try:
+        session.loop_until_closed() # run forever
+    finally:
+        serial_obj.close()
 
