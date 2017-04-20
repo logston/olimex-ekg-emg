@@ -39,12 +39,24 @@ class FakeSerialByteArray(object):
     def __init__(self, byte_array, *args, **kwargs):
         self._buffer = byte_array
         self._pos = 0
+        self._call_count = 0
 
     def __repr__(self):
         return '<FakeSerialByteArray {}>'.format(id(self))
 
     def inWaiting(self):
-        return len(self._buffer) - self._pos
+        self._call_count += 1
+        # 22 is a random number I chose that
+        # made the graph move at an acceptable
+        # speed.
+        if not self._call_count % 22:
+            raise StopIteration
+
+        left_in_buffer = len(self._buffer) - self._pos
+        if left_in_buffer < PACKET_SIZE:
+            return left_in_buffer
+
+        return PACKET_SIZE
 
     def read(self, n=1):
         """

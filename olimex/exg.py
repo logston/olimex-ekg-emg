@@ -74,7 +74,7 @@ class PacketStreamReader:
         buff.append(ord(byte0))
         buff.append(ord(byte1))
         # read 15 more bytes and parse result
-        buff.extend(self._serial.read(PACKET_SIZE -2))
+        buff.extend(self._serial.read(PACKET_SIZE - 2))
         return buff
 
     def _get_next_packet_values(self):
@@ -95,6 +95,7 @@ class PacketStreamReader:
     def __next__(self):
         if not self._packet_index % SAMPLE_FREQUENCY:
             self.times.append(time.perf_counter() - self.start_time)
+
         values = self._get_next_packet_values()
 
         if values is None:

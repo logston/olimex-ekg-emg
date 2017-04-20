@@ -41,12 +41,15 @@ def get_new_data_points(packet_reader):
     while True:
         new_data = []
         while True:
-            channel_values = next(packet_reader)
+            try:
+                channel_values = next(packet_reader)
+            except StopIteration:
+                break
+
             if channel_values:
                 channel_1, *_ = channel_values
                 new_data.append(channel_1)
-            else:
-                break
+
         new_data = scipy.ndimage.zoom(
             new_data,
             DOTS_PER_SECOND / SAMPLE_FREQUENCY,
@@ -63,7 +66,7 @@ def exg(source):
         with open(source, 'rb') as fd:
             buff = bytearray(fd.read())
         serial_obj = FakeSerialByteArray(buff)
-        print('Done.')
+        print('Done.', flush=True)
 
     else:
         serial_obj = serial.Serial(source, baudrate=DEFAULT_BAUDRATE)
