@@ -3,6 +3,12 @@
 Release History
 ---------------
 
+0.2.0 (2017-04-25)
+++++++++++++++++++
+
+* Use bokeh for all plotting!
+* Add function for listing serial ports
+
 0.1.8 (2015-08-30)
 ++++++++++++++++++
 

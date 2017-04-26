@@ -34,38 +34,51 @@ Installation
 Usage
 -----
 
-::
+First run both Jupyter Noteobook and Bokeh's server:
 
-    $ exg -p /path/to/port
-
-Replace ``/path/to/port`` with the path to the port to which your Arduino is connected.
-
-A `matplotlib figure`_ should appear and a real-time wave form should begin go to be drawn.
-Calibration of the waveform within the figure make take up to 10 seconds.
-
-Or, to play around with the included mock data ...
+In one terminal window:
 
 ::
 
-    $ exg -f <mock data filename>
+    $ jupyter notebook
 
-Replace ``<mock data filename>`` with one of the mock data file names. To get a
-list of the mock data file names, use the ``--list-mock-data`` command line
-option. For example:
+In another terminal window:
 
-:: 
+::
 
-    $ exg --list-mock-data
-    afib.bin
-    afltr.bin
-    asys.bin
-    j-brady.bin
-    nsr.bin
+    $ bokeh serve
+
+Then from within a Jupyter notebook cell:
+
+::
+
+    from olimex.nb import exg; exg(<port or mock data name>)
+
+This will start a new browser tab/window where the EKG will appear. the value
+passed to the ``exg`` function can be a port (eg. `/dev/tty.usbmodem1411`, `COM1`)
+or the name of a mock data file (`nsr.bin`).
+
+To list all available ports that may be sending EKG data, use:
+
+::
+
+    from olimex.utils import list_serial_ports
+
+    list_serial_ports()
+
+To list all mock data:
+
+::
+
+    from olimex.utils import get_mock_data_list
+
+    _, mock_data = get_mock_data_list()
+    mock_data
 
 Example Output
 --------------
 
-.. image:: http://logston.github.io/talks/2015-08-15-Hearduino/build/images/nsr_snippet.gif
+.. image:: https://github.com/logston/olimex-ekg-emg/raw/master/docs/images/nsr.gif
 
 
 Further Documentation

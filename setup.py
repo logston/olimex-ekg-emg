@@ -25,13 +25,10 @@ setup(
     data_files=[('olimex/mock-data', MOCK_DATA_FILES)],
     test_suite='tests',
     keywords=['Olimex', 'EKG', 'EMG', 'Arduino'],
-    entry_points = {
-        'console_scripts': ['exg=olimex.gui:run_gui'],
-    },
     install_requires=[
+        'bokeh>=0.12.2',
         'pyserial>=2.7',
         'numpy>=1.9.1',
-        'matplotlib>=1.4.2',
         'scipy>=0.15.1',
     ],
     classifiers=[
