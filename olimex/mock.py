@@ -46,10 +46,10 @@ class FakeSerialByteArray(object):
 
     def inWaiting(self):
         self._call_count += 1
-        # 22 is a random number I chose that
+        # A random number I chose that
         # made the graph move at an acceptable
         # speed.
-        if not self._call_count % 22:
+        if not self._call_count % 24:
             raise StopIteration
 
         left_in_buffer = len(self._buffer) - self._pos

@@ -77,10 +77,14 @@ def exg(source):
     p = figure(
         x_range=(0, 1024),
         y_range=(0, 1024),
-        plot_width=1024, 
+        plot_width=1024,
         plot_height=400,
-        tools=[],
+        tools='save',
+        toolbar_location='below',
     )
+    p.axis.visible = False
+    p.xgrid.visible = False
+
     line = p.line(
         x=tuple(range(1024)), 
         y=tuple(512 for _ in range(1024))
